@@ -158,6 +158,10 @@ These are architectural goals, not claims that all protections are already imple
 
 **Do not expose a development deployment to untrusted networks or use production API keys until authentication and security testing are complete.**
 
+For responsible vulnerability disclosure, supported versions, and security reporting instructions, see our [Security Policy](SECURITY.md).
+
+Please report security vulnerabilities privately rather than opening public GitHub issues.
+
 ## Contributing
 
 Contributions, bug reports, feature suggestions, and discussions are welcome.
@@ -168,7 +172,9 @@ You can participate through [GitHub Issues](https://github.com/headdeck/headdeck
 
 ## License
 
-License information will be added once the project's open-source license is finalized.
+HeadDeck is licensed under the [Apache License, Version 2.0](LICENSE).
+
+See the [LICENSE](LICENSE) file for the complete license terms.
 
 ## Links
 
