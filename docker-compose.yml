@@ -1,0 +1,8 @@
+---
+services:
+  admin:
+    image: ghcr.io/headdeck/headdeck:latest
+    container_name: admin
+    restart: unless-stopped
+    ports:
+      - "3000:3000"

@@ -1,0 +1,21 @@
+# Ignore dependencies
+node_modules
+.pnpm-store
+.npm
+.next
+
+# Ignore Git and logs
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+*.log
+
+# Ignore OS files
+.DS_Store
+
+# Other files and folders to ignore
+*.env
+.github
+*.iml
+README.md

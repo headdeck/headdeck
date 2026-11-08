@@ -1,0 +1,71 @@
+# ===============================
+# Dependencies
+# ===============================
+**/node_modules
+**/.pnpm-store
+**/.npm
+
+# ===============================
+# Build outputs
+# ===============================
+**/.next
+**/dist
+**/build
+**/coverage
+
+# ===============================
+# Environment / secrets
+# ===============================
+**/.env
+**/.env.*
+**/.secrets
+**/.vars
+
+# Keep example environment files if needed
+!**/.env.example
+!admin/.env.production
+!website/.env.production
+!backend/.env.production
+
+# ===============================
+# Git / GitHub
+# ===============================
+.git
+.gitignore
+.github
+
+# ===============================
+# IDE
+# ===============================
+.idea
+.vscode
+**/*.iml
+
+# ===============================
+# Logs
+# ===============================
+**/*.log
+**/logs
+
+# ===============================
+# OS files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Docker / deployment
+# ===============================
+**/Dockerfile
+docker-compose.yml
+
+# ===============================
+# Local development scripts
+# ===============================
+run-local-workflow.bat
+update-packages.bat
+
+# ===============================
+# Documentation
+# ===============================
+**/README.md
