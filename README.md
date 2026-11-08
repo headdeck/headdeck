@@ -88,7 +88,7 @@ AUTH_SECRET=your-generated-secret
 Generate a secure Auth.js secret using:
 
 ```bash
-pnpm exec auth secret
+pnpm dlx auth secret
 ```
 
 The Headscale URL is configured server-side and is not entered by users through the login screen.
