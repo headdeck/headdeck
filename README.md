@@ -6,7 +6,7 @@ HeadDeck is an independent, community-driven web application for managing [Heads
 
 Built with Next.js and TypeScript, HeadDeck communicates with the Headscale management API from the server. It does not require a separate application backend or database.
 
-> **Status — v0.1.3:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
+> **Status — v0.1.4:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
 
 ## Features
 
@@ -60,7 +60,7 @@ The Next.js server handles authenticated communication with Headscale. Interacti
 Prebuilt images are published to [GitHub Container Registry](https://github.com/orgs/headdeck/packages/container/package/headdeck) for `linux/amd64` and `linux/arm64`.
 
 ```bash
-docker pull ghcr.io/headdeck/headdeck:0.1.3
+docker pull ghcr.io/headdeck/headdeck:0.1.4
 ```
 
 Use a versioned tag for reproducible deployments. The `0.1` and `latest` tags track newer releases and can change over time.
@@ -72,7 +72,7 @@ Create a `compose.yaml`:
 ```yaml
 services:
   headdeck:
-    image: ghcr.io/headdeck/headdeck:0.1.3
+    image: ghcr.io/headdeck/headdeck:0.1.4
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
@@ -81,9 +81,10 @@ services:
       AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
       AUTH_URL: "https://headdeck.example.com"
       AUTH_TRUST_HOST: "true"
+      BASE_PATH: "${BASE_PATH:-}"
 ```
 
-Create a `.env` file alongside `compose.yaml` containing a strong, randomly generated `AUTH_SECRET` (for example, generate one with `openssl rand -base64 32`). Do not commit this file. Replace the Headscale URL and public HeadDeck URL with your own. `AUTH_URL` must match the URL administrators actually use; for direct HTTP testing on localhost, use `http://localhost:3000` instead.
+Create a `.env` file alongside `compose.yaml` containing a strong, randomly generated `AUTH_SECRET` (for example, generate one with `openssl rand -base64 32`). Do not commit this file. Replace the Headscale URL and public HeadDeck URL with your own. `AUTH_URL` should be the public **origin** (scheme and hostname, plus port if needed), without the `BASE_PATH` suffix; for direct HTTP testing on localhost, use `http://localhost:3000` instead. `BASE_PATH` is optional and defaults to empty, so normal root deployments require no extra configuration.
 
 ```bash
 docker compose up -d
@@ -92,6 +93,92 @@ docker compose up -d
 This example binds port 3000 to the **host loopback interface**, intended for a reverse proxy running on the same host. Configure the proxy to serve HeadDeck over HTTPS and forward the original host and scheme headers. If the reverse proxy runs on another machine or in another container, adapt the network and port configuration rather than blindly exposing the admin interface publicly. `AUTH_TRUST_HOST=true` should only be used when requests arrive through a trusted proxy or controlled ingress that validates host headers.
 
 Open your configured HeadDeck URL, sign in using a Headscale API key, and use **Settings → Test Connection**.
+
+### Hosting under a URL prefix (runtime `BASE_PATH`)
+
+Starting with v0.1.4, HeadDeck can be served at a prefix such as `https://network.example.com/admin/` without rebuilding the Docker image. Set the **server-only**, runtime environment variable `BASE_PATH` to the public path prefix; do not use `NEXT_PUBLIC_BASE_PATH` or configure Next.js's build-time `basePath`.
+
+For example, when Headscale and HeadDeck share `network.example.com`, add this to the Compose `.env` file:
+
+```dotenv
+AUTH_SECRET=replace-with-a-strong-random-secret
+BASE_PATH=/admin
+```
+
+The Compose example above passes `BASE_PATH` into the container. Set `HEADSCALE_URL=https://network.example.com` and `AUTH_URL=https://network.example.com` in `compose.yaml` for this deployment. **Do not append `/admin` to `AUTH_URL` or `HEADSCALE_URL`.** If using `env_file: .env` instead, ensure the required variables are actually passed into the container; a Compose `.env` file alone is used for substitution and is not automatically injected as container environment variables.
+
+| `BASE_PATH` | Public HeadDeck URL |
+| --- | --- |
+| Unset or empty | `https://headdeck.example.com/` |
+| `/admin` | `https://network.example.com/admin/` |
+| `/headdeck` | `https://network.example.com/headdeck/` |
+
+The reverse proxy **must remove the prefix** before forwarding requests to HeadDeck. The application continues to use internal routes such as `/nodes`, while generating prefixed browser navigation and login/logout redirects at runtime.
+
+#### Example Nginx: Headscale and HeadDeck on one hostname
+
+The following is an illustrative HTTPS `server` block. It assumes Nginx can reach Headscale at `127.0.0.1:8080` and HeadDeck at `127.0.0.1:3000`. Adapt upstream addresses and certificate paths to your deployment. The HeadDeck container's port binding in the Compose example works when Nginx is on the same host.
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name network.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/network.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/network.example.com/privkey.pem;
+
+    # Next.js assets are requested at the domain root.
+    location ^~ /_next/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Auth.js endpoints are also rooted at /api/auth/.
+    # Do not forward these to Headscale.
+    location ^~ /api/auth/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location = /admin {
+        return 301 /admin/;
+    }
+
+    location /admin/ {
+        # Trailing slash strips /admin/ before forwarding to HeadDeck.
+        proxy_pass http://127.0.0.1:3000/;
+        proxy_redirect ~^(/.*)$ /admin$1;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # All other paths remain with Headscale, including its /api/v1/ API.
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+This is a starting example, **not a complete hardened reverse-proxy configuration**. Preserve the TLS, access-control, WebSocket, and other settings required by your Headscale deployment. If you protect `/admin/` with an external authentication gateway, separately assess the root-level `/api/auth/` endpoints and avoid breaking Auth.js callbacks. Never expose the HeadDeck upstream directly to untrusted networks.
+
+**Important limitations:** Prefix hosting is not fully path-isolated: `/_next/` and `/api/auth/` remain reserved at the hostname root. Check for collisions with other applications before using a shared hostname. The documented `/admin` deployment has been manually exercised for authentication and navigation, but not every administrative write operation or reverse-proxy combination has been validated. After changing `BASE_PATH`, recreate the container and test sign-in, sign-out, navigation, and management actions.
 
 ### Headscale servers using an internal CA
 
@@ -103,6 +190,7 @@ If the Headscale HTTPS certificate is signed by a private CA, Node.js in the Hea
       AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
       AUTH_URL: "https://headdeck.example.com"
       AUTH_TRUST_HOST: "true"
+      BASE_PATH: "${BASE_PATH:-}"
       NODE_EXTRA_CA_CERTS: "/etc/headdeck/ca/root-ca.pem"
     volumes:
       - ./certs/root-ca.pem:/etc/headdeck/ca/root-ca.pem:ro
@@ -142,6 +230,7 @@ AUTH_SECRET=replace-with-a-strong-random-secret
 | --- | --- |
 | `HEADSCALE_URL` | Base URL of the Headscale server, including its port if needed. Used only on the server. |
 | `AUTH_SECRET` | Secret used by Auth.js to protect session tokens. Required. |
+| `BASE_PATH` | Optional private runtime URL prefix (for example, `/admin`). Empty by default. |
 
 Generate a secret using:
 
@@ -224,6 +313,7 @@ For responsible disclosure, see the [Security Policy](SECURITY.md). Please repor
 - [ ] Responsive layout verification across target devices
 - [x] Production Docker build and initial container runtime testing
 - [x] Initial public Docker image release (AMD64 and ARM64)
+- [x] Runtime-configurable URL prefix with initial shared-hostname Nginx example
 - [ ] Broader production deployment and reverse-proxy validation
 
 ## Contributing
