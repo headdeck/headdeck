@@ -10,9 +10,15 @@ export default function DashboardLayout({
                                         }: {
     children: ReactNode;
 }) {
+    const basePath = (process.env.BASE_PATH ?? "")
+        .trim()
+        .replace(/^\/+|\/+$/g, "");
+
+    const normalizedBasePath = basePath ? `/${basePath}` : "";
+
     return (
         <SidebarProvider>
-            <AppSidebar/>
+            <AppSidebar basePath={normalizedBasePath}/>
 
             <SidebarInset className="min-w-0">
                 <AppHeader/>

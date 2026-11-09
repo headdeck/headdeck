@@ -13,7 +13,7 @@ export const NodeSchema = z.object({
     user: UserSchema,
     lastSeen: z.iso.datetime({offset: true}).nullable(),
     expiry: z.iso.datetime({offset: true}).nullable(),
-    preAuthKey: PreAuthKeySchema.optional(),
+    preAuthKey: PreAuthKeySchema.nullish(),
     createdAt: z.iso.datetime({offset: true}),
     registerMethod: z.string(),
     givenName: z.string(),

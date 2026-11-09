@@ -10,7 +10,7 @@ export const {handlers, auth, signIn, signOut} = NextAuth({
     },
 
     pages: {
-        signIn: "/login",
+        signIn: `${process.env.BASE_PATH?.replace(/\/+$/, "") || ""}/login`,
     },
 
     providers: [

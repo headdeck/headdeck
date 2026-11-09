@@ -10,6 +10,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/
 type Props = {
     nodes: NodeSchema.Node[];
     users: UserSchema.User[];
+    basePath: string;
 };
 
 function formatDate(value: string): string {
@@ -31,7 +32,9 @@ function getNodeIPv4(node: NodeSchema.Node): string {
     ) ?? node.ipAddresses[0] ?? "—";
 }
 
-export default function OverviewPage({nodes, users}: Props) {
+export default function OverviewPage({nodes, users, basePath}: Props) {
+    const withBasePath = (path: string) => `${basePath}${path}`;
+
     const totalNodes = nodes.length;
     const onlineNodes = nodes.filter((node) => node.online).length;
     const offlineNodes = totalNodes - onlineNodes;
@@ -226,7 +229,7 @@ export default function OverviewPage({nodes, users}: Props) {
                             return (
                                 <Link
                                     key={item.href}
-                                    href={item.href}
+                                    href={withBasePath(item.href)}
                                     className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent"
                                 >
                                     <Icon className="size-5 shrink-0 text-muted-foreground"/>
@@ -258,7 +261,7 @@ export default function OverviewPage({nodes, users}: Props) {
                     </div>
 
                     <Link
-                        href="/nodes"
+                        href={withBasePath("/nodes")}
                         className="inline-flex shrink-0 items-center gap-1 text-sm font-medium hover:underline"
                     >
                         View all

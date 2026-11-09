@@ -8,10 +8,17 @@ export default async function Page() {
         listUsers(),
     ]);
 
+    const path = (process.env.BASE_PATH ?? "")
+        .trim()
+        .replace(/^\/+|\/+$/g, "");
+
+    const basePath = path ? `/${path}` : "";
+
     return (
         <OverviewPage
             nodes={nodes}
             users={users}
+            basePath={basePath}
         />
     );
 }

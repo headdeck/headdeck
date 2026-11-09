@@ -32,14 +32,15 @@ const navigation: NavigationItem[] = [
     {title: "API Keys", href: "/api-keys", icon: KeyRound},
 ];
 
-export function AppSidebar() {
+export function AppSidebar({basePath}: {basePath: string}) {
     const pathname = usePathname();
+    const withBasePath = (path: string) => `${basePath}${path === "/" ? "/" : path}`;
 
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
                 <Link
-                    href="/"
+                    href={withBasePath("/")}
                     className="flex h-12 items-center gap-3 px-2"
                 >
                     <div
@@ -65,13 +66,14 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {navigation.map((item) => {
-                                const active = pathname === item.href;
+                                const href = withBasePath(item.href);
+                                const active = pathname === href;
                                 const Icon = item.icon;
 
                                 return (
                                     <SidebarMenuItem key={item.href}>
                                         <Link
-                                            href={item.href}
+                                            href={href}
                                             aria-current={active ? "page" : undefined}
                                             title={item.title}
                                             className={[
@@ -100,13 +102,13 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <Link
-                            href="/settings"
+                            href={withBasePath("/settings")}
                             title="Settings"
                             className={[
                                 "flex h-9 items-center gap-3 rounded-md px-2 text-sm",
                                 "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                                 "group-data-[collapsible=icon]:justify-center",
-                                pathname === "/settings"
+                                pathname === withBasePath("/settings")
                                     ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
                                     : "text-sidebar-foreground",
                             ].join(" ")}
