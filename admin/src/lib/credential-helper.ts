@@ -11,7 +11,7 @@ export async function getHeadscaleApiKey(): Promise<string> {
             headers: requestHeaders,
         },
         secret: process.env.AUTH_SECRET,
-        secureCookie: process.env.NODE_ENV === "production",
+        secureCookie: process.env.AUTH_URL?.startsWith("https://") ?? false,
     });
 
     if (!token || typeof token.apiKey !== "string" || !token.apiKey) {

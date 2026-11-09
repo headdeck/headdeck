@@ -69,3 +69,8 @@ update-packages.bat
 # Documentation
 # ===============================
 **/README.md
+
+**/.turbo
+README.md
+LICENSE
+SECURITY.md
