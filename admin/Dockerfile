@@ -8,7 +8,7 @@ WORKDIR /app
 ENV CI=true
 ENV PNPM_CONF_CONFIRM_MODULES_PURGE=false
 
-RUN corepack enable
+RUN npm install -g pnpm@12
 
 # ===============================
 # Workspace manifests
