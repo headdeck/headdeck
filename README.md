@@ -6,7 +6,7 @@ HeadDeck is an independent, community-driven web application for managing [Heads
 
 Built with Next.js and TypeScript, HeadDeck communicates with the Headscale management API from the server. It does not require a separate application backend or database.
 
-> **Status — v0.1.0 development:** The core management features and API-key authentication are implemented and have been exercised against a Headscale v0.29.7 test instance. Security review, broader compatibility testing, production build/deployment validation, and release testing are still pending. Treat this as pre-release software, not a production-readiness guarantee.
+> **Status — v0.1.2:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
 
 ## Features
 
@@ -55,16 +55,73 @@ headdeck/
 
 The Next.js server handles authenticated communication with Headscale. Interactive UI components invoke server actions where appropriate; there is no separate HeadDeck API service or application database.
 
+## Docker deployment (recommended)
+
+Prebuilt images are published to [GitHub Container Registry](https://github.com/orgs/headdeck/packages/container/package/headdeck) for `linux/amd64` and `linux/arm64`.
+
+```bash
+docker pull ghcr.io/headdeck/headdeck:0.1.2
+```
+
+Use a versioned tag for reproducible deployments. The `0.1` and `latest` tags track newer releases and can change over time.
+
+### Docker Compose
+
+Create a `compose.yaml`:
+
+```yaml
+services:
+  headdeck:
+    image: ghcr.io/headdeck/headdeck:0.1.2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      HEADSCALE_URL: "https://headscale.example.com"
+      AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
+      AUTH_URL: "https://headdeck.example.com"
+      AUTH_TRUST_HOST: "true"
+```
+
+Create a `.env` file alongside `compose.yaml` containing a strong, randomly generated `AUTH_SECRET` (for example, generate one with `openssl rand -base64 32`). Do not commit this file. Replace the Headscale URL and public HeadDeck URL with your own. `AUTH_URL` must match the URL administrators actually use; for direct HTTP testing on localhost, use `http://localhost:3000` instead.
+
+```bash
+docker compose up -d
+```
+
+This example binds port 3000 to the **host loopback interface**, intended for a reverse proxy running on the same host. Configure the proxy to serve HeadDeck over HTTPS and forward the original host and scheme headers. If the reverse proxy runs on another machine or in another container, adapt the network and port configuration rather than blindly exposing the admin interface publicly. `AUTH_TRUST_HOST=true` should only be used when requests arrive through a trusted proxy or controlled ingress that validates host headers.
+
+Open your configured HeadDeck URL, sign in using a Headscale API key, and use **Settings → Test Connection**.
+
+### Headscale servers using an internal CA
+
+If the Headscale HTTPS certificate is signed by a private CA, Node.js in the HeadDeck container must trust that CA. Add the following to the `headdeck` service in `compose.yaml`:
+
+```yaml
+    environment:
+      HEADSCALE_URL: "https://headscale.example.com"
+      AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
+      AUTH_URL: "https://headdeck.example.com"
+      AUTH_TRUST_HOST: "true"
+      NODE_EXTRA_CA_CERTS: "/etc/headdeck/ca/root-ca.pem"
+    volumes:
+      - ./certs/root-ca.pem:/etc/headdeck/ca/root-ca.pem:ro
+```
+
+The `environment` block above **replaces** the earlier one; do not add a second `environment` key. Supply your own PEM-encoded CA certificate at `./certs/root-ca.pem`, and restart the container. The Headscale server should also present any required intermediate certificates. **Never disable TLS verification** with `NODE_TLS_REJECT_UNAUTHORIZED=0`.
+
+`HEADSCALE_URL` must be reachable from inside the HeadDeck container. The application does not need a separate database or persistent application-data volume.
+
 ## Getting started
 
-### Prerequisites
+### Prerequisites for source development
 
 - A Node.js version supported by the Next.js version in this repository
 - pnpm
 - A reachable Headscale server with a compatible management API
 - A Headscale API key authorized to perform the management operations you intend to use
 
-### Clone and install
+### Clone and install for development
 
 ```bash
 git clone https://github.com/headdeck/headdeck.git
@@ -72,7 +129,7 @@ cd headdeck/admin
 pnpm install
 ```
 
-### Configure environment variables
+### Configure development environment variables
 
 Create `admin/.env.local`:
 
@@ -114,7 +171,7 @@ From the `admin` directory:
 pnpm build
 ```
 
-A successful build is only one part of deployment validation. Production hosting and reverse-proxy configuration should be tested separately before exposing HeadDeck to users.
+A multi-platform production Docker image has been built and its runtime manually tested. Production hosting, HTTPS termination, and reverse-proxy configuration should still be validated for each deployment before exposing HeadDeck to users.
 
 ## Compatibility
 
@@ -134,7 +191,7 @@ HeadDeck can perform sensitive network-administration operations. Deploy it with
 - Use HTTPS, a strong `AUTH_SECRET`, and appropriately scoped/restricted network access to the HeadDeck application and Headscale API.
 - Avoid using production credentials in development or publicly reachable test deployments.
 
-**Security review and production deployment validation are still outstanding.** These implementation choices do not constitute an independent security audit.
+**A formal security review and comprehensive production deployment validation are still outstanding.** A successful container build and manual functional testing do not constitute an independent security audit.
 
 For responsible disclosure, see the [Security Policy](SECURITY.md). Please report security vulnerabilities privately rather than opening public GitHub issues.
 
@@ -165,8 +222,9 @@ For responsible disclosure, see the [Security Policy](SECURITY.md). Please repor
 - [ ] Broader integration and end-to-end testing
 - [ ] Security and accessibility review
 - [ ] Responsive layout verification across target devices
-- [ ] Production build and deployment validation
-- [ ] Initial public release
+- [x] Production Docker build and initial container runtime testing
+- [x] Initial public Docker image release (AMD64 and ARM64)
+- [ ] Broader production deployment and reverse-proxy validation
 
 ## Contributing
 
