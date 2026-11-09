@@ -1,7 +1,7 @@
 {
-  "name": "@lokeshjain/shared",
+  "name": "@headdeck/shared",
   "version": "1.0.0",
-  "author": "Lokesh Jain <luckycreationsindia@gmail.com>",
+  "author": "HeadDeck <support@headdeck.org>",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "jsonc-parser": "^3.3.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
