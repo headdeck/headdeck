@@ -1,6 +1,8 @@
 {
   "name": "@headdeck/admin",
   "version": "0.1.4",
+  "author": "HeadDeck <support@headdeck.org>",
+  "license": "Apache-2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -32,6 +34,5 @@
     "eslint-config-next": "16.4.5",
     "tailwindcss": "^4",
     "typescript": "^6"
-  },
-  "packageManager": "pnpm@12.15.0"
+  }
 }
