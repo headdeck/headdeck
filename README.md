@@ -8,6 +8,12 @@ Built with Next.js and TypeScript, HeadDeck communicates with the Headscale mana
 
 > **Status — v0.1.4:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
 
+## Preview
+
+![HeadDeck dashboard in dark mode](docs/screenshots/dashboard.png)
+
+Explore the interface in the [screenshots gallery](#screenshots) below.
+
 ## Features
 
 - **Dashboard:** Total and online node counts, user counts, approved route counts, online/offline summaries, and recently registered nodes.
@@ -20,6 +26,42 @@ Built with Next.js and TypeScript, HeadDeck communicates with the Headscale mana
 - **Authentication:** Sign in using a Headscale API key, with Auth.js JWT-based sessions and protected application routes.
 
 HeadDeck uses the Headscale management API for persistent network state. It does not maintain its own copy of nodes, users, or policies in a separate database.
+
+## Screenshots
+
+Screenshots of the HeadDeck interface in dark mode, with an additional light-mode dashboard preview.
+
+### Dashboard
+
+![HeadDeck dashboard — dark mode](docs/screenshots/dashboard.png)
+
+### Dashboard — light mode
+
+![HeadDeck dashboard — light mode](docs/screenshots/dashboard_light.png)
+
+### Nodes
+
+![HeadDeck node management](docs/screenshots/nodes.png)
+
+### Users
+
+![HeadDeck user management](docs/screenshots/users.png)
+
+### Pre-authentication keys
+
+![HeadDeck pre-authentication key management](docs/screenshots/preauth-keys.png)
+
+### API keys
+
+![HeadDeck API key management](docs/screenshots/api-keys.png)
+
+### Access policies
+
+![HeadDeck access policy editor](docs/screenshots/access-policies.png)
+
+### Settings
+
+![HeadDeck settings](docs/screenshots/settings.png)
 
 ## Authentication and sessions
 
