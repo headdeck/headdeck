@@ -23,9 +23,6 @@
 
 # Keep example environment files if needed
 !**/.env.example
-!admin/.env.production
-!website/.env.production
-!backend/.env.production
 
 # ===============================
 # Git / GitHub
@@ -65,12 +62,6 @@ docker-compose.yml
 run-local-workflow.bat
 update-packages.bat
 
-# ===============================
-# Documentation
-# ===============================
-**/README.md
-
 **/.turbo
-README.md
+*.md
 LICENSE
-SECURITY.md
