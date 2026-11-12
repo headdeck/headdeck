@@ -1,8 +1,8 @@
 "use client";
 
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useState, useTransition} from "react";
 import {useRouter} from "next/navigation";
-import {Check, ChevronRight, Clock3, KeyRound, Plus, Search, ShieldCheck, ShieldX,} from "lucide-react";
+import {Check, ChevronRight, Clock3, KeyRound, Plus, RefreshCw, Search, ShieldCheck, ShieldX} from "lucide-react";
 
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -30,6 +30,13 @@ export default function ApiKeysPage({apiKeys, currentApiKeyId}: Props) {
     const [createOpen, setCreateOpen] = useState(false);
     const [createdSecret, setCreatedSecret] = useState<string | null>(null);
     const [now, setNow] = useState(() => Date.now());
+    const [isRefreshing, startRefresh] = useTransition();
+
+    function handleRefresh() {
+        startRefresh(() => {
+            router.refresh();
+        });
+    }
 
     useEffect(() => {
         const nextExpiration = apiKeys
@@ -112,10 +119,21 @@ export default function ApiKeysPage({apiKeys, currentApiKeyId}: Props) {
                     </p>
                 </div>
 
-                <Button onClick={() => setCreateOpen(true)}>
-                    <Plus className="size-4"/>
-                    Create API Key
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        disabled={isRefreshing}
+                        onClick={handleRefresh}
+                    >
+                        <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}/>
+                        {isRefreshing ? "Refreshing..." : "Refresh"}
+                    </Button>
+
+                    <Button onClick={() => setCreateOpen(true)}>
+                        <Plus className="size-4"/>
+                        Create API Key
+                    </Button>
+                </div>
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">

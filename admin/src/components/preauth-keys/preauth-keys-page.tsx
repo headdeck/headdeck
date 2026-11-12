@@ -1,8 +1,8 @@
 "use client";
 
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState, useTransition} from "react";
+import {Check, ChevronRight, Clock3, KeyRound, Plus, RefreshCw, Search, ShieldCheck, XCircle} from "lucide-react";
 import {useRouter} from "next/navigation";
-import {Check, ChevronRight, Clock3, KeyRound, Plus, Search, ShieldCheck, XCircle,} from "lucide-react";
 
 import {PreAuthKeySchema, UserSchema} from "@headdeck/shared";
 
@@ -89,6 +89,13 @@ export default function PreAuthKeysPage({keys: serverKeys, availableTags, users}
     const [createOpen, setCreateOpen] = useState(false);
     const [keys, setKeys] = useState(serverKeys);
     const deletedKeyIds = useRef(new Set<string>());
+    const [isRefreshing, startRefresh] = useTransition();
+
+    function handleRefresh() {
+        startRefresh(() => {
+            router.refresh();
+        });
+    }
 
     useEffect(() => {
         setKeys((current) => {
@@ -209,6 +216,15 @@ export default function PreAuthKeysPage({keys: serverKeys, availableTags, users}
                 </div>
 
                 <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        disabled={isRefreshing}
+                        onClick={handleRefresh}
+                    >
+                        <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}/>
+                        {isRefreshing ? "Refreshing..." : "Refresh"}
+                    </Button>
+
                     <DeleteExpiredPreAuthKeysDialog
                         expiredCount={expiredCount}
                         onComplete={handleExpiredKeysDeleted}

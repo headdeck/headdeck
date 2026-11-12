@@ -1,7 +1,8 @@
 "use client";
 
-import {useMemo, useState} from "react";
-import {CheckCircle2, RotateCcw, Save, TriangleAlert,} from "lucide-react";
+import {useEffect, useMemo, useState, useTransition} from "react";
+import {useRouter} from "next/navigation";
+import {CheckCircle2, RefreshCw, RotateCcw, Save, TriangleAlert} from "lucide-react";
 
 import {parsePolicyDocument, UserSchema,} from "@headdeck/shared";
 
@@ -35,8 +36,26 @@ export default function AccessPoliciesPage({
 
     const [draft, setDraft] = useState(initialPolicy);
     const [publishOpen, setPublishOpen] = useState(false);
+    const router = useRouter();
+    const [isRefreshing, startRefresh] = useTransition();
+
+    function handleRefresh() {
+        if (changed) return;
+
+        startRefresh(() => {
+            router.refresh();
+        });
+    }
 
     const changed = draft !== livePolicy;
+
+    useEffect(() => {
+        if (changed) return;
+
+        setLivePolicy(initialPolicy);
+        setLiveUpdatedAt(updatedAt);
+        setDraft(initialPolicy);
+    }, [initialPolicy, updatedAt, changed]);
 
     const validation = useMemo<ValidationResult>(() => {
         try {
@@ -81,9 +100,21 @@ export default function AccessPoliciesPage({
                     </p>
                 </div>
 
-                <Badge variant="outline">
-                    Live Policy
-                </Badge>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        disabled={isRefreshing || changed}
+                        onClick={handleRefresh}
+                        title={changed ? "Reset or publish your draft before refreshing" : undefined}
+                    >
+                        <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}/>
+                        {isRefreshing ? "Refreshing..." : "Refresh"}
+                    </Button>
+
+                    <Badge variant="outline">
+                        Live Policy
+                    </Badge>
+                </div>
             </div>
 
             <PolicyOverview

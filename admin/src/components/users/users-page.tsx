@@ -1,7 +1,8 @@
 "use client";
 
-import {useMemo, useState} from "react";
-import {ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, Search, UserRound, Users,} from "lucide-react";
+import {useMemo, useState, useTransition} from "react";
+import {useRouter} from "next/navigation";
+import {ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, RefreshCw, Search, UserRound, Users} from "lucide-react";
 
 import {NodeSchema, UserSchema} from "@headdeck/shared";
 
@@ -34,6 +35,7 @@ function formatDate(value: string) {
 }
 
 export default function UsersPage({users, nodes}: Props) {
+    const router = useRouter();
     const [search, setSearch] = useState("");
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -42,6 +44,14 @@ export default function UsersPage({users, nodes}: Props) {
 
     const [sortField, setSortField] = useState<SortField>("name");
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+    const [isRefreshing, startRefresh] = useTransition();
+
+    function handleRefresh() {
+        startRefresh(() => {
+            router.refresh();
+        });
+    }
 
     const usersWithNodes = new Set(
         nodes.map((node) => node.user.id),
@@ -127,7 +137,18 @@ export default function UsersPage({users, nodes}: Props) {
                     </p>
                 </div>
 
-                <CreateUserDialog/>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        disabled={isRefreshing}
+                        onClick={handleRefresh}
+                    >
+                        <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}/>
+                        {isRefreshing ? "Refreshing..." : "Refresh"}
+                    </Button>
+
+                    <CreateUserDialog/>
+                </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
