@@ -6,7 +6,7 @@ HeadDeck is an independent, community-driven web application for managing [Heads
 
 Built with Next.js and TypeScript, HeadDeck communicates with the Headscale management API from the server. It does not require a separate application backend or database.
 
-> **Status — v0.1.4:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
+> **Status — v0.2.0:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
 
 ## Preview
 
@@ -18,12 +18,14 @@ Explore the interface in the [screenshots gallery](#screenshots) below.
 
 - **Dashboard:** Total and online node counts, user counts, approved route counts, online/offline summaries, and recently registered nodes.
 - **Nodes:** Browse, search, sort, and paginate nodes; inspect details; rename, expire, and delete nodes; manage tags and approved routes.
+- **Device onboarding**: Register new devices through a guided workflow using interactive authentication or single-use pre-authentication keys. Generate Tailscale connection commands directly from HeadDeck.
 - **Users:** Browse and manage Headscale users, including creating, renaming, and deleting users.
 - **Pre-authentication keys:** Create keys with configurable user, expiration, reusability, ephemeral behavior, and tags; inspect key records, expire keys, and remove expired keys. Newly created secrets are displayed once.
 - **API keys:** Create, inspect, expire, and delete Headscale API keys. Newly created secrets are displayed once.
 - **Access policies:** Edit Headscale policies with a visual editor or HuJSON editor; manage groups, tag owners, and ACL rules; format drafts and publish policies to Headscale.
 - **Settings:** Inspect the configured Headscale endpoint, manually test API connectivity, sign out, switch between light/dark/system themes, and view application information.
 - **Authentication:** Sign in using a Headscale API key, with Auth.js JWT-based sessions and protected application routes.
+- **Manual refresh:** Refresh Nodes, Users, Pre-authentication Keys, API Keys, and Access Policies without reloading the browser. Unsaved access policy drafts are protected from manual refresh.
 
 HeadDeck uses the Headscale management API for persistent network state. It does not maintain its own copy of nodes, users, or policies in a separate database.
 
@@ -102,7 +104,7 @@ The Next.js server handles authenticated communication with Headscale. Interacti
 Prebuilt images are published to [GitHub Container Registry](https://github.com/orgs/headdeck/packages/container/package/headdeck) for `linux/amd64` and `linux/arm64`.
 
 ```bash
-docker pull ghcr.io/headdeck/headdeck:0.1.4
+docker pull ghcr.io/headdeck/headdeck:0.2.0
 ```
 
 Use a versioned tag for reproducible deployments. The `0.1` and `latest` tags track newer releases and can change over time.
@@ -114,12 +116,13 @@ Create a `compose.yaml`:
 ```yaml
 services:
   headdeck:
-    image: ghcr.io/headdeck/headdeck:0.1.4
+    image: ghcr.io/headdeck/headdeck:0.2.0
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
     environment:
       HEADSCALE_URL: "https://headscale.example.com"
+      HEADSCALE_EXTERNAL_URL: "https://headscale.example.com"
       AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
       AUTH_URL: "https://headdeck.example.com"
       AUTH_TRUST_HOST: "true"
@@ -229,6 +232,7 @@ If the Headscale HTTPS certificate is signed by a private CA, Node.js in the Hea
 ```yaml
     environment:
       HEADSCALE_URL: "https://headscale.example.com"
+      HEADSCALE_EXTERNAL_URL: "https://headscale.example.com"
       AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
       AUTH_URL: "https://headdeck.example.com"
       AUTH_TRUST_HOST: "true"
@@ -273,6 +277,7 @@ AUTH_SECRET=replace-with-a-strong-random-secret
 | `HEADSCALE_URL` | Base URL of the Headscale server, including its port if needed. Used only on the server. |
 | `AUTH_SECRET` | Secret used by Auth.js to protect session tokens. Required. |
 | `BASE_PATH` | Optional private runtime URL prefix (for example, `/admin`). Empty by default. |
+| `HEADSCALE_EXTERNAL_URL` | Optional Headscale URL used in device onboarding commands. Falls back to HEADSCALE_URL with a reachability warning. |
 
 Generate a secret using:
 
@@ -347,6 +352,8 @@ For responsible disclosure, see the [Security Policy](SECURITY.md). Please repor
 - [x] API key management
 - [x] Access policy editing and publishing
 - [x] Connection testing and sign-out
+- [x] Guided device registration and onboarding
+- [x] Manual refresh controls for administration pages
 
 ### Phase 3 — Release readiness
 
