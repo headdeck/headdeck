@@ -6,7 +6,7 @@ HeadDeck is an independent, community-driven web application for managing [Heads
 
 Built with Next.js and TypeScript, HeadDeck communicates with the Headscale management API from the server. It does not require a separate application backend or database.
 
-> **Status — v0.2.0:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
+> **Status — v0.2.1:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
 
 ## Preview
 
@@ -104,7 +104,7 @@ The Next.js server handles authenticated communication with Headscale. Interacti
 Prebuilt images are published to [GitHub Container Registry](https://github.com/orgs/headdeck/packages/container/package/headdeck) for `linux/amd64` and `linux/arm64`.
 
 ```bash
-docker pull ghcr.io/headdeck/headdeck:0.2.0
+docker pull ghcr.io/headdeck/headdeck:0.2.1
 ```
 
 Use a versioned tag for reproducible deployments. The `0.1` and `latest` tags track newer releases and can change over time.
@@ -116,7 +116,7 @@ Create a `compose.yaml`:
 ```yaml
 services:
   headdeck:
-    image: ghcr.io/headdeck/headdeck:0.2.0
+    image: ghcr.io/headdeck/headdeck:0.2.1
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
