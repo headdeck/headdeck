@@ -1,6 +1,8 @@
 "use client";
 
 import {useMemo, useState} from "react";
+import {useRouter} from "next/navigation";
+import {useTransition} from "react";
 import {
     ArrowDown,
     ArrowUp,
@@ -8,6 +10,7 @@ import {
     ChevronRight,
     Monitor,
     Network,
+    Plus,
     Search,
     Server,
     Wifi,
@@ -15,7 +18,7 @@ import {
     X
 } from "lucide-react";
 
-import {NodeSchema} from "@headdeck/shared";
+import {NodeSchema, UserSchema} from "@headdeck/shared";
 
 import Pagination from "@/components/common/pagination";
 import NodeDetails from "@/components/nodes/node-details";
@@ -25,11 +28,18 @@ import {Card, CardContent} from "@/components/ui/card";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
 import {getNodeStatus, getNodeStatusBadge, NodeStatus} from "@/components/nodes/node-status";
 
+import AddDeviceDialog from "@/components/nodes/add-device-dialog";
+
+import {RefreshCw} from "lucide-react";
+
 type Node = NodeSchema.NodeSummary;
 
 type Props = {
     nodes: Node[];
     availableTags: string[];
+    users: UserSchema.User[];
+    externalUrl: string;
+    usingFallback: boolean;
 };
 
 type SortField = "name" | "user" | "status" | "id";
@@ -40,7 +50,15 @@ function getIPv4(node: Node) {
     return node.ipAddresses.find((ip) => ip.includes(".")) ?? "—";
 }
 
-export default function NodesPage({nodes, availableTags}: Props) {
+export default function NodesPage({
+                                      nodes,
+                                      availableTags,
+                                      users,
+                                      externalUrl,
+                                      usingFallback,
+                                  }: Props) {
+    const router = useRouter();
+
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState<StatusFilter>("all");
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -50,6 +68,15 @@ export default function NodesPage({nodes, availableTags}: Props) {
 
     const [sortField, setSortField] = useState<SortField>("name");
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+    const [addDeviceOpen, setAddDeviceOpen] = useState(false);
+    const [isRefreshing, startRefresh] = useTransition();
+
+    function handleRefresh() {
+        startRefresh(() => {
+            router.refresh();
+        });
+    }
 
     const nodesStatus: NodeStatus[] = nodes.map(getNodeStatus);
 
@@ -155,6 +182,27 @@ export default function NodesPage({nodes, availableTags}: Props) {
                     <p className="mt-1 text-sm text-muted-foreground">
                         Manage registered devices and their routes.
                     </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                    >
+                        <RefreshCw
+                            className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}
+                        />
+                        {isRefreshing ? "Refreshing..." : "Refresh"}
+                    </Button>
+
+                    <Button
+                        onClick={() => setAddDeviceOpen(true)}
+                        disabled={!externalUrl || users.length === 0}
+                    >
+                        <Plus className="size-4"/>
+                        Add Device
+                    </Button>
                 </div>
             </div>
 
@@ -390,6 +438,14 @@ export default function NodesPage({nodes, availableTags}: Props) {
                 node={selectedNode}
                 onClose={() => setSelectedId(null)}
                 availableTags={availableTags}
+            />
+
+            <AddDeviceDialog
+                open={addDeviceOpen}
+                onOpenChange={setAddDeviceOpen}
+                users={users}
+                externalUrl={externalUrl}
+                usingFallback={usingFallback}
             />
         </div>
     );

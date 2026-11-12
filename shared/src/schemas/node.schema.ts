@@ -95,6 +95,17 @@ export const DeleteNodeSchema = z.object({
 
 export const DeleteNodeResponseSchema = z.object({});
 
+export const RegisterNodeSchema = z.object({
+    user: z.string().trim().min(1, "User is required"),
+    authId: z.string().trim().min(1, "Authentication ID is required"),
+});
+
+export const RegisterNodeResponseSchema = z.object({
+    node: NodeSchema,
+});
+
+export type RegisterNode = z.infer<typeof RegisterNodeSchema>;
+export type RegisterNodeResponse = z.infer<typeof RegisterNodeResponseSchema>;
 export type DeleteNode = z.infer<typeof DeleteNodeSchema>;
 export type DeleteNodeResponse = z.infer<typeof DeleteNodeResponseSchema>;
 export type SetNodeTags = z.infer<typeof SetNodeTagsSchema>;

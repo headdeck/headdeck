@@ -83,3 +83,21 @@ export async function deleteNode(
         },
     );
 }
+
+export async function registerNode(
+    input: NodeSchema.RegisterNode,
+): Promise<NodeSchema.RegisterNodeResponse> {
+    const data = NodeSchema.RegisterNodeSchema.parse(input);
+
+    return headscaleRequest(
+        "/api/v1/auth/register",
+        NodeSchema.RegisterNodeResponseSchema,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        },
+    );
+}

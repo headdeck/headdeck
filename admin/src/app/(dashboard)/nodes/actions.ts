@@ -4,7 +4,7 @@ import {revalidatePath} from "next/cache";
 
 import {NodeSchema} from "@headdeck/shared";
 
-import {deleteNode, expireNode, renameNode, setNodeTags} from "@/lib/api/nodes";
+import {deleteNode, expireNode, registerNode, renameNode, setNodeTags} from "@/lib/api/nodes";
 
 type ActionResult =
     | { success: true }
@@ -116,6 +116,36 @@ export async function deleteNodeAction(
         return {
             success: false,
             error: "Unable to delete node. Please try again.",
+        };
+    }
+}
+
+export async function registerNodeAction(
+    input: NodeSchema.RegisterNode,
+): Promise<ActionResult> {
+    const parsed = NodeSchema.RegisterNodeSchema.safeParse(input);
+
+    if (!parsed.success) {
+        return {
+            success: false,
+            error: parsed.error.issues[0]?.message
+                ?? "Invalid registration details.",
+        };
+    }
+
+    try {
+        await registerNode(parsed.data);
+
+        revalidatePath("/nodes");
+        revalidatePath("/users");
+
+        return {success: true};
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error
+                ? error.message
+                : "Unable to register device. Please try again.",
         };
     }
 }
