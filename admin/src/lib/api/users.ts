@@ -7,7 +7,7 @@ import {headscaleRequest} from "@/lib/api/headscale-client";
 
 export async function listUsers(): Promise<UserSchema.ListUsersResponse> {
     return headscaleRequest(
-        "/api/v1/user",
+        "/user",
         UserSchema.ListUsersResponseSchema,
     );
 }
@@ -18,7 +18,7 @@ export async function createUser(
     const data = UserSchema.CreateUserSchema.parse(input);
 
     return headscaleRequest(
-        "/api/v1/user",
+        "/user",
         UserSchema.CreateUserResponseSchema,
         {
             method: "POST",
@@ -36,7 +36,7 @@ export async function renameUser(
     const {id, newName} = UserSchema.RenameUserSchema.parse(input);
 
     return headscaleRequest(
-        `/api/v1/user/${encodeURIComponent(id)}/rename/${encodeURIComponent(newName)}`,
+        `/user/${encodeURIComponent(id)}/rename/${encodeURIComponent(newName)}`,
         UserSchema.RenameUserResponseSchema,
         {
             method: "POST",
@@ -50,7 +50,7 @@ export async function deleteUser(
     const {id} = UserSchema.DeleteUserSchema.parse(input);
 
     await headscaleRequest(
-        `/api/v1/user/${encodeURIComponent(id)}`,
+        `/user/${encodeURIComponent(id)}`,
         z.unknown(),
         {
             method: "DELETE",

@@ -10,7 +10,7 @@ export async function setApprovedRoutes(
     const data = RouteSchema.SetApprovedRoutesSchema.parse(input);
 
     return headscaleRequest(
-        `/api/v1/node/${encodeURIComponent(data.nodeId)}/approve_routes`,
+        `/node/${encodeURIComponent(data.nodeId)}/approve_routes`,
         RouteSchema.SetApprovedRoutesResponseSchema,
         {
             method: "POST",

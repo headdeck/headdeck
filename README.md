@@ -6,7 +6,7 @@ HeadDeck is an independent, community-driven web application for managing [Heads
 
 Built with Next.js and TypeScript, HeadDeck communicates with the Headscale management API from the server. It does not require a separate application backend or database.
 
-> **Status — v0.2.1:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
+> **Status — v0.2.2:** HeadDeck is available as a public Docker image for Linux AMD64 and ARM64. Core management features have been manually exercised against Headscale v0.29.7, and the container build and runtime have been tested. Broader compatibility testing, a formal security review, and comprehensive production deployment validation are still pending. This is an early community release, not a production-readiness guarantee.
 
 ## Preview
 
@@ -104,10 +104,10 @@ The Next.js server handles authenticated communication with Headscale. Interacti
 Prebuilt images are published to [GitHub Container Registry](https://github.com/orgs/headdeck/packages/container/package/headdeck) for `linux/amd64` and `linux/arm64`.
 
 ```bash
-docker pull ghcr.io/headdeck/headdeck:0.2.1
+docker pull ghcr.io/headdeck/headdeck:0.2.2
 ```
 
-Use a versioned tag for reproducible deployments. The `0.1` and `latest` tags track newer releases and can change over time.
+Use a versioned tag for reproducible deployments. The latest tag may change as new releases are published.
 
 ### Docker Compose
 
@@ -116,13 +116,14 @@ Create a `compose.yaml`:
 ```yaml
 services:
   headdeck:
-    image: ghcr.io/headdeck/headdeck:0.2.1
+    image: ghcr.io/headdeck/headdeck:0.2.2
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
     environment:
       HEADSCALE_URL: "https://headscale.example.com"
       HEADSCALE_EXTERNAL_URL: "https://headscale.example.com"
+      HEADSCALE_API_PREFIX: "${HEADSCALE_API_PREFIX:-/api/v1}"
       AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
       AUTH_URL: "https://headdeck.example.com"
       AUTH_TRUST_HOST: "true"
@@ -233,6 +234,7 @@ If the Headscale HTTPS certificate is signed by a private CA, Node.js in the Hea
     environment:
       HEADSCALE_URL: "https://headscale.example.com"
       HEADSCALE_EXTERNAL_URL: "https://headscale.example.com"
+      HEADSCALE_API_PREFIX: "${HEADSCALE_API_PREFIX:-/api/v1}"
       AUTH_SECRET: "${AUTH_SECRET:?Set AUTH_SECRET in .env}"
       AUTH_URL: "https://headdeck.example.com"
       AUTH_TRUST_HOST: "true"
@@ -278,6 +280,7 @@ AUTH_SECRET=replace-with-a-strong-random-secret
 | `AUTH_SECRET` | Secret used by Auth.js to protect session tokens. Required. |
 | `BASE_PATH` | Optional private runtime URL prefix (for example, `/admin`). Empty by default. |
 | `HEADSCALE_EXTERNAL_URL` | Optional Headscale URL used in device onboarding commands. Falls back to HEADSCALE_URL with a reachability warning. |
+| `HEADSCALE_API_PREFIX` | Optional Headscale management API path prefix. Defaults to `/api/v1`. Changing this value does not automatically provide compatibility with different API versions.|
 
 Generate a secret using:
 
@@ -314,6 +317,8 @@ A multi-platform production Docker image has been built and its runtime manually
 HeadDeck has been developed and tested against **Headscale v0.29.7**. This is the currently verified development target, **not** a declaration that all older or newer releases are compatible.
 
 Headscale management API behavior can change between versions. Broader compatibility testing and a formally supported version range are still pending.
+
+HeadDeck centralizes the Headscale API prefix through the optional `HEADSCALE_API_PREFIX` environment variable. The default is `/api/v1`, matching the currently tested Headscale management API. Other API versions may require additional endpoint, request, and response compatibility changes.
 
 ## Security considerations
 

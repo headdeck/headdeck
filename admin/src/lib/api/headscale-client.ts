@@ -3,6 +3,7 @@ import "server-only";
 import {z} from "zod";
 
 import {getHeadscaleApiKey} from "@/lib/credential-helper";
+import {HEADSCALE_API_PREFIX} from "@/lib/utils";
 
 export class HeadscaleApiError extends Error {
     constructor(
@@ -31,7 +32,10 @@ export async function headscaleRequest<T extends z.ZodType>(
         throw new Error("Headscale API path must be relative to the configured origin");
     }
 
-    const url = new URL(path, `${baseUrl.replace(/\/+$/, "")}/`);
+    const url = new URL(
+        `${HEADSCALE_API_PREFIX}${path}`,
+        `${baseUrl.replace(/\/+$/, "")}/`,
+    );
 
     const requestHeaders = new Headers(options.headers);
     requestHeaders.set("Authorization", `Bearer ${apiKey}`);

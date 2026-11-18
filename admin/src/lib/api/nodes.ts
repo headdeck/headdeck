@@ -7,7 +7,7 @@ import {headscaleRequest} from "@/lib/api/headscale-client";
 
 export async function listNodes(): Promise<NodeSchema.ListNodesResponse> {
     return headscaleRequest(
-        "/api/v1/node",
+        "/node",
         NodeSchema.ListNodesResponseSchema,
     );
 }
@@ -26,7 +26,7 @@ export async function renameNode(
     const {id, newName} = NodeSchema.RenameNodeSchema.parse(input);
 
     return headscaleRequest(
-        `/api/v1/node/${encodeURIComponent(id)}/rename/${encodeURIComponent(newName)}`,
+        `/node/${encodeURIComponent(id)}/rename/${encodeURIComponent(newName)}`,
         NodeSchema.RenameNodeResponseSchema,
         {
             method: "POST",
@@ -40,7 +40,7 @@ export async function expireNode(
     const {id} = NodeSchema.ExpireNodeSchema.parse(input);
 
     return headscaleRequest(
-        `/api/v1/node/${encodeURIComponent(id)}/expire`,
+        `/node/${encodeURIComponent(id)}/expire`,
         NodeSchema.ExpireNodeResponseSchema,
         {
             method: "POST",
@@ -58,7 +58,7 @@ export async function setNodeTags(
     const {id, tags} = NodeSchema.SetNodeTagsSchema.parse(input);
 
     return headscaleRequest(
-        `/api/v1/node/${encodeURIComponent(id)}/tags`,
+        `/node/${encodeURIComponent(id)}/tags`,
         NodeSchema.SetNodeTagsResponseSchema,
         {
             method: "POST",
@@ -76,7 +76,7 @@ export async function deleteNode(
     const {id} = NodeSchema.DeleteNodeSchema.parse(input);
 
     return headscaleRequest(
-        `/api/v1/node/${encodeURIComponent(id)}`,
+        `/node/${encodeURIComponent(id)}`,
         NodeSchema.DeleteNodeResponseSchema,
         {
             method: "DELETE",
@@ -90,7 +90,7 @@ export async function registerNode(
     const data = NodeSchema.RegisterNodeSchema.parse(input);
 
     return headscaleRequest(
-        "/api/v1/auth/register",
+        "/auth/register",
         NodeSchema.RegisterNodeResponseSchema,
         {
             method: "POST",

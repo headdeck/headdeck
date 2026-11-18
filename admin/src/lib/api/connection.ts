@@ -10,11 +10,7 @@ const ConnectionResponseSchema = z.object({
 
 export async function testHeadscaleConnection(): Promise<void> {
     await headscaleRequest(
-        "/api/v1/user",
+        "/user",
         ConnectionResponseSchema,
     );
-}
-
-export function getHeadscaleServerUrl(): string | null {
-    return process.env.HEADSCALE_URL ?? null;
 }

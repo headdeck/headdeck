@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import {AuthSchema} from "@headdeck/shared";
+import {HEADSCALE_API_PREFIX} from "@/lib/utils";
 
 export const {handlers, auth, signIn, signOut} = NextAuth({
     session: {
@@ -29,8 +30,14 @@ export const {handlers, auth, signIn, signOut} = NextAuth({
                     return null;
                 }
 
+                const headscaleUrl = process.env.HEADSCALE_URL?.replace(/\/+$/, "");
+
+                if (!headscaleUrl) {
+                    return null;
+                }
+
                 const response = await fetch(
-                    `${process.env.HEADSCALE_URL}/api/v1/user`,
+                    `${headscaleUrl}${HEADSCALE_API_PREFIX}/user`,
                     {
                         method: "GET",
                         headers: {

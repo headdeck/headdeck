@@ -6,7 +6,7 @@ import {headscaleRequest} from "@/lib/api/headscale-client";
 
 export async function getPolicy(): Promise<PolicySchema.GetPolicyResponse> {
     return headscaleRequest(
-        "/api/v1/policy",
+        "/policy",
         PolicySchema.GetPolicyResponseSchema,
     );
 }
@@ -17,7 +17,7 @@ export async function setPolicy(
     const {policy} = PolicySchema.SetPolicySchema.parse(input);
 
     return headscaleRequest(
-        "/api/v1/policy",
+        "/policy",
         PolicySchema.SetPolicyResponseSchema,
         {
             method: "PUT",

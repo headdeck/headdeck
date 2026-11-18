@@ -6,7 +6,7 @@ import {headscaleRequest} from "@/lib/api/headscale-client";
 
 export async function listApiKeys() {
     const response = await headscaleRequest(
-        "/api/v1/apikey",
+        "/apikey",
         ApiKeySchema.ListApiKeysResponseSchema,
     );
 
@@ -17,7 +17,7 @@ export async function createApiKey(input: ApiKeySchema.CreateApiKey) {
     const data = ApiKeySchema.CreateApiKeySchema.parse(input);
 
     return headscaleRequest(
-        "/api/v1/apikey",
+        "/apikey",
         ApiKeySchema.CreateApiKeyResponseSchema,
         {
             method: "POST",
@@ -30,7 +30,7 @@ export async function expireApiKey(input: ApiKeySchema.ExpireApiKey) {
     const data = ApiKeySchema.ExpireApiKeySchema.parse(input);
 
     return headscaleRequest(
-        "/api/v1/apikey/expire",
+        "/apikey/expire",
         ApiKeySchema.ExpireApiKeyResponseSchema,
         {
             method: "POST",
@@ -43,7 +43,7 @@ export async function deleteApiKey(input: ApiKeySchema.DeleteApiKey) {
     const data = ApiKeySchema.DeleteApiKeySchema.parse(input);
 
     return headscaleRequest(
-        `/api/v1/apikey/${encodeURIComponent(data.prefix)}`,
+        `/apikey/${encodeURIComponent(data.prefix)}`,
         ApiKeySchema.DeleteApiKeyResponseSchema,
         {
             method: "DELETE",

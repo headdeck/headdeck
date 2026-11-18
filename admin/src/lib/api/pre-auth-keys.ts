@@ -6,7 +6,7 @@ import {headscaleRequest} from "@/lib/api/headscale-client";
 
 export async function listPreAuthKeys(): Promise<PreAuthKeySchema.ListPreAuthKeysResponse> {
     return headscaleRequest(
-        "/api/v1/preauthkey",
+        "/preauthkey",
         PreAuthKeySchema.ListPreAuthKeysResponseSchema,
     );
 }
@@ -17,7 +17,7 @@ export async function createPreAuthKey(
     const data = PreAuthKeySchema.CreatePreAuthKeySchema.parse(input);
 
     return headscaleRequest(
-        "/api/v1/preauthkey",
+        "/preauthkey",
         PreAuthKeySchema.CreatePreAuthKeyResponseSchema,
         {
             method: "POST",
@@ -35,7 +35,7 @@ export async function expirePreAuthKey(
     const {id} = PreAuthKeySchema.ExpirePreAuthKeySchema.parse(input);
 
     return headscaleRequest(
-        "/api/v1/preauthkey/expire",
+        "/preauthkey/expire",
         PreAuthKeySchema.ExpirePreAuthKeyResponseSchema,
         {
             method: "POST",
@@ -55,7 +55,7 @@ export async function deletePreAuthKey(
     const params = new URLSearchParams({id});
 
     return headscaleRequest(
-        `/api/v1/preauthkey?${params.toString()}`,
+        `/preauthkey?${params.toString()}`,
         PreAuthKeySchema.DeletePreAuthKeyResponseSchema,
         {
             method: "DELETE",
